@@ -43,6 +43,8 @@ export interface NodeSessionOptions {
   deviceClient: DeviceClient | null;
   now?: () => number;
   sleep?: (ms: number) => Promise<void>;
+  /** Called when a remembered storage connection fails during an aggregate listing, before it is skipped. */
+  onStorageError?: (connectionLabel: string, error: unknown) => void;
 }
 
 /** What `auth status` and `auth login` report. */
@@ -81,7 +83,7 @@ export class ConflictError extends Error {
 const LOGIN_HINT = 'Run "vibecomics auth login" and have the user approve it.';
 
 export function createNodeSession(options: NodeSessionOptions) {
-  const { store, deviceClient } = options;
+  const { store, deviceClient, onStorageError } = options;
   const fetchImpl = options.fetch ?? fetch;
   const now = options.now ?? Date.now;
   const sleep = options.sleep ?? ((ms: number) => new Promise((r) => setTimeout(r, ms)));
@@ -160,8 +162,9 @@ export function createNodeSession(options: NodeSessionOptions) {
             connectionLabel: 'Google Drive',
           }))
         );
-      } catch {
+      } catch (e) {
         // Drive is logged in but unreachable right now: skip it like a dead bucket rather than failing the list.
+        onStorageError?.('Google Drive', e);
       }
     }
     for (const target of state.s3 ?? []) {
@@ -174,8 +177,9 @@ export function createNodeSession(options: NodeSessionOptions) {
             connectionLabel: s3Label(target),
           }))
         );
-      } catch {
+      } catch (e) {
         // Remembered but not reachable right now.
+        onStorageError?.(s3Label(target), e);
       }
     }
     // A project of the same name in more than one connection: the S3 bucket's copy wins (matches the app).

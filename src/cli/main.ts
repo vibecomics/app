@@ -9,6 +9,7 @@ import path from 'node:path';
 import { createComicBuilder } from '../ai/actions';
 import type { PanelBrief } from '../ai/panelBrief';
 import type { DeviceClient } from '../drive/deviceOAuth';
+import { errorMessage } from '../utils/errors';
 import { UsageError, buildArgs, parseArgv } from './args';
 import {
   AUTH_HELP,
@@ -132,6 +133,8 @@ async function run(argv: string[], io: CliIo): Promise<number | void> {
     deviceClient: io.deviceClient,
     sleep: io.sleep,
     now: io.now,
+    onStorageError: (label, e) =>
+      io.stderr(`warning: storage connection "${label}" failed, skipping it: ${errorMessage(e)}\n`),
   });
 
   // ---- auth -----------------------------------------------------------------------
