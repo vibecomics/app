@@ -139,9 +139,14 @@ export default function StoryTab({ project, kind, focus, onFocusApplied }: Story
   // The entry just shown by the generation queue, lit up for a moment so it's easy to spot.
   const [highlighted, setHighlighted] = useState<string | null>(null);
 
+  const [prevFocus, setPrevFocus] = useState(focus);
+  if (focus !== prevFocus) {
+    setPrevFocus(focus);
+    if (focus?.type === 'reference' && focus.kind === kind) setHighlighted(focus.entryId);
+  }
+
   useEffect(() => {
     if (focus?.type !== 'reference' || focus.kind !== kind) return;
-    setHighlighted(focus.entryId);
     document
       .getElementById(`entry-${focus.entryId}`)
       ?.scrollIntoView({ block: 'center', behavior: 'smooth' });

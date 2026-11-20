@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { cb } from '../ai/actions';
 import type { DeviceCodeInfo } from '../drive/driveClient';
 import type { StorageConnectionInfo } from '../storage/connections';
@@ -33,9 +33,11 @@ export default function ConnectSettings({ connections, deviceCode, onChange }: P
 
   // Close the Drive popup once the device flow finishes, one way or another (App.tsx clears
   // deviceCode in both cases); a success shows up as a new row via the connections prop.
-  useEffect(() => {
+  const [prevDeviceCode, setPrevDeviceCode] = useState(deviceCode);
+  if (deviceCode !== prevDeviceCode) {
+    setPrevDeviceCode(deviceCode);
     if (deviceCode === null) setShowDriveModal(false);
-  }, [deviceCode]);
+  }
 
   function startDrive() {
     setError('');
