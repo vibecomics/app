@@ -59,7 +59,7 @@ export function ConnectS3Modal({
   onConnect: (connectionString: string) => Promise<void>;
   onClose: () => void;
 }) {
-  const [host, setHost] = useState('server:9000');
+  const [host, setHost] = useState('devserver:9000');
   const [bucket, setBucket] = useState('vibecomics');
   const [accessKeyId, setAccessKeyId] = useState('changeme');
   const [secretAccessKey, setSecretAccessKey] = useState('changeme');

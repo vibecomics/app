@@ -386,7 +386,7 @@ export const INPUTS = {
     scope: {
       type: 'string',
       example: 'layers',
-      help: '"layers" (every dirty layer), "references" (every dirty variation) or reference:<kind>/<entryId>/* (every variation of one entry).',
+      help: '"layers" (every dirty layer), "references" (every dirty variation), "panels" (every stale panel image), "all" (all three, in order, with progress — prefer the standalone vibecomics-generate.mjs for that) or reference:<kind>/<entryId>/* (every variation of one entry).',
     },
     options: {
       type: 'object',
@@ -400,6 +400,24 @@ export const INPUTS = {
         },
         prompt: { type: 'multiline', optional: true, allowEmpty: true },
         references: REFERENCE_LIST,
+        phases: {
+          type: 'json',
+          optional: true,
+          example: '["references","layers"]',
+          help: 'For "all": which stages to run, from "references", "layers", "panels". Omit for all three.',
+        },
+        referenceKinds: {
+          type: 'json',
+          optional: true,
+          example: '["characters"]',
+          help: 'For "all": only these reference lists ("characters", "scenes", "objects").',
+        },
+        layerKinds: {
+          type: 'json',
+          optional: true,
+          example: '["background"]',
+          help: 'For "all": only these layer kinds ("background", "foreground").',
+        },
       },
     },
   },

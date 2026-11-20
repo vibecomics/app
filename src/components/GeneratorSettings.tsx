@@ -92,6 +92,18 @@ export default function GeneratorSettings({ onClose }: Props) {
         Used when an AI agent drives vibecomics: tells it where and how to generate images. Set a
         URL, instructions, or both.
       </div>
+      <div className="form-text mb-2">
+        Using a custom image service with an AI agent? Download{' '}
+        <a href="./vibecomics-generate.mjs" download>
+          vibecomics-generate.mjs
+        </a>{' '}
+        and run it (Node.js 20+) instead of letting the agent generate image by image:{' '}
+        <code>
+          node vibecomics-generate.mjs --service {url.trim() || '<service url>'} --s3{' '}
+          {'<connection string>'} --project {'<name>'}
+        </code>
+        . It finds everything that needs generating itself and prints its progress.
+      </div>
       {task.error && <div className="text-danger small mb-2">{task.error}</div>}
     </Modal>
   );

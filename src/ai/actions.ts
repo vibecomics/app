@@ -97,6 +97,8 @@ import {
   maxReferenceImages,
 } from './generation';
 import type { GenerationReference, GenerationTarget } from './generation';
+import { GENERATE_ALL_PHASES, generateAllImages } from './generateAll';
+import type { GenerateAllOptions, GenerateAllPhase, GenerateAllResult } from './generateAll';
 import type {
   GeneratedImage,
   GenerationOutcome,
@@ -1466,9 +1468,13 @@ export function createComicBuilder(deps: ComicBuilderDeps) {
        *   - "panels": every panel whose panel image no longer matches its layers or prompt (see
        *     generate.status("panels")). Only panels that already have a panel image are ever dirty —
        *     a panel with none yet is generated with generate.run, which also sets its first image.
+       *   - "all": everything dirty, in order — reference art first, then every layer and background
+       *     panel by panel, then panel images — found and counted by the function itself, with
+       *     progress reported as it goes (see options.onProgress). This is the same function the
+       *     standalone script vibecomics-generate.mjs runs.
        *   - "reference:<kind>/<entryId>/*": every variation of one entry, dirty or not.
-       * @param scope - "layers", "references", "panels", or "reference:<kind>/<entryId>/*".
-       * @param options - Optional { kinds?, prompt?, references? }. kinds restricts "layers" to these layer kinds (e.g. ["background"] for backgrounds only) or "references" to these lists (e.g. ["characters"] for cast only); ignored for "panels". prompt and references only apply to "reference:<kind>/<entryId>/*": prompt replaces the shared base (Style + description + technical requirements), each variation's own prompt is still stitched on top so every image still draws a different pose/state; references replace each variation's own default references.
+       * @param scope - "layers", "references", "panels", "all", or "reference:<kind>/<entryId>/*".
+       * @param options - Optional { kinds?, prompt?, references?, phases?, referenceKinds?, layerKinds?, onProgress? }. phases, referenceKinds, layerKinds and onProgress apply to "all" only: phases picks stages (["references","layers","panels"], default all), referenceKinds and layerKinds filter like kinds does, and onProgress is a function called with { type: "start" | "phase" | "item" | "finish", message, total, ... } (JavaScript callers only). kinds restricts "layers" to these layer kinds (e.g. ["background"] for backgrounds only) or "references" to these lists (e.g. ["characters"] for cast only); ignored for "panels". prompt and references only apply to "reference:<kind>/<entryId>/*": prompt replaces the shared base (Style + description + technical requirements), each variation's own prompt is still stitched on top so every image still draws a different pose/state; references replace each variation's own default references.
        * @returns A promise resolving to one outcome per item found when it started: { pageId, panelId, layerId, ok, error? } for "layers", { kind, entryId, variationId, ok, error? } for "references", { pageId, panelId, ok, error? } for "panels", { variationId, ok, error? } for one entry's variations.
        */
       batch: (
@@ -1477,10 +1483,27 @@ export function createComicBuilder(deps: ComicBuilderDeps) {
           kinds?: string[];
           prompt?: string;
           references?: GenerationReference[];
+          phases?: string[];
+          referenceKinds?: string[];
+          layerKinds?: string[];
+          onProgress?: GenerateAllOptions['onProgress'];
         }
       ): Promise<
-        Array<GenerationOutcome | VariationRefOutcome | VariationOutcome | PanelImageOutcome>
+        | GenerateAllResult
+        | Array<GenerationOutcome | VariationRefOutcome | VariationOutcome | PanelImageOutcome>
       > => {
+        if (scope === 'all') {
+          const { phases, referenceKinds, layerKinds, onProgress } = options ?? {};
+          for (const phase of phases ?? []) assertKind(phase, GENERATE_ALL_PHASES, 'Phase');
+          for (const kind of referenceKinds ?? []) assertKind(kind, STORY_KIND_NAMES, 'Kind');
+          for (const kind of layerKinds ?? []) assertKind(kind, LAYER_KINDS, 'Layer kind');
+          return generateAllImages(deps, setLayerMedia, {
+            phases: phases as GenerateAllPhase[] | undefined,
+            referenceKinds: referenceKinds as StoryKind[] | undefined,
+            layerKinds: layerKinds as LayerKind[] | undefined,
+            onProgress,
+          });
+        }
         const kinds = options?.kinds;
         if (scope === 'layers' || scope === 'references') {
           if (kinds !== undefined && !Array.isArray(kinds)) {
@@ -1498,7 +1521,7 @@ export function createComicBuilder(deps: ComicBuilderDeps) {
         const t = parseTarget(scope);
         if (t.type !== 'variations') {
           throw new Error(
-            'batch needs "layers", "references", "panels" or "reference:<kind>/<entryId>/*"; for one image use generate.run.'
+            'batch needs "layers", "references", "panels", "all" or "reference:<kind>/<entryId>/*"; for one image use generate.run.'
           );
         }
         return generateAllVariations(deps, t.kind, t.entryId, options?.prompt, options?.references);

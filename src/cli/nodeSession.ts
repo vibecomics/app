@@ -392,15 +392,18 @@ export function createNodeSession(options: NodeSessionOptions) {
     const repo = repoFor(projectConnectionId());
     for (let attempt = 0; ; attempt++) {
       const savedAt = new Date(now()).toISOString();
+      // What is being written. A long-running command (generate-all) saves while its next image is
+      // still being made, so `project` can be replaced during the await below: whatever came after
+      // this snapshot is not saved yet and must stay dirty.
+      const saving = project;
+      const written = { ...saving, savedAt, updatedAt: savedAt };
       try {
-        version = await repo.saveProjectJson(
-          id,
-          { ...project, savedAt, updatedAt: savedAt },
-          version
-        );
-        project = { ...project, savedAt };
-        base = structuredClone(project);
-        dirty = false;
+        version = await repo.saveProjectJson(id, written, version);
+        base = structuredClone(written);
+        if (project === saving) {
+          project = { ...project, savedAt };
+          dirty = false;
+        }
         return;
       } catch (e) {
         if (!(e instanceof ProjectChangedError) || attempt >= 3) throw e;

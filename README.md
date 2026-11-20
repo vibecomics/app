@@ -118,6 +118,8 @@ node vibecomics.mjs auth login              # prints a URL + code for the user t
 node vibecomics.mjs auth status             # finishes the login once they have
 node vibecomics.mjs storage createProject "My comic"
 node vibecomics.mjs layers add <panelId> '{"prompt":"…"}'
+# generate every dirty image (references, then layers/backgrounds, then panel images), with progress:
+node vibecomics-generate.mjs --service <image service url> --s3 <s3://key:secret@host:9000/bucket> --project "My comic"
 ```
 
 It is the same API as `window.ComicBuilder` in the app (see below), one command

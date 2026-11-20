@@ -28,7 +28,10 @@ const CONVENTIONS = `How the CLI works
     "@file.json". Any text or JSON argument that starts with @ is read from that file.
   - Images are files: "media upload hero.png --thumbnail hero.thumb.png". To look
     at an image, "media download <id> --out hero.png" writes it to a file.
-  - There is no preview screen in the CLI (page preview is unavailable).`;
+  - There is no preview screen in the CLI (page preview is unavailable).
+  - To generate every outstanding image in one long run (reference art, then layers and
+    backgrounds panel by panel, then panel images), use the separate script
+    vibecomics-generate.mjs, served next to this one: "node vibecomics-generate.mjs --help".`;
 
 export const AUTH_HELP = `vibecomics auth login [--wait]
   Start logging in to Google Drive. Prints a URL and a code: the user opens the URL on

@@ -16,6 +16,9 @@ you fetched this file from, replacing just the file name.
 - This file is the workflow guide itself, served as `llms.txt`.
 - CLI: `vibecomics.mjs`, next to this file — the single-file program you run.
   There is nothing else to install.
+- Image generation script: `vibecomics-generate.mjs`, next to this file — a second,
+  standalone program that generates every outstanding image in one long run
+  (section 10, "The generate script"). Also needs only Node.js 20+.
 - API documentation: `api.txt`, next to this file — the exact commands,
   arguments, and returns for the project's API functions. Also available
   from the CLI itself as full help and per-command help.
@@ -570,7 +573,8 @@ the image service configuration (`generate.config()`). It holds a `url`,
 a `prompt`, or both. Outcomes:
 
 - A `url` is set: the project calls it for you. Test it (`generate.test()`)
-  and proceed, letting it do the stitching (section 9).
+  and proceed — with the generate script described below, which does
+  Phases 1 to 3 itself. (The phases below say what it does, and what to do if you must generate by hand.)
 - Only a `prompt` is set: it tells you where and how to generate images
   yourself (a URL to call, a tool to use). Follow it, using prompts from
   `generate.inspect` (its result repeats the instructions as
@@ -584,6 +588,71 @@ a `prompt`, or both. Outcomes:
 - You are generating externally by agreement: follow the standing rule
   directly below — every prompt is fetched from the API, assembled by
   the project, never stitched by hand.
+
+**The generate script — use it instead of generating image by image.**
+`vibecomics-generate.mjs` (download it from the address above, like
+`vibecomics.mjs`) is one long-running program that does all of the
+generation below for you, in the right order, with the project's own
+prompts and reference images. It is the same function the app's Generate
+button runs. Prefer it whenever the image service has a `url` (including
+a custom one the human gave you: save it with `generate.config` or just
+pass it as `--service`); then you do not fetch prompts, call the service,
+upload or attach anything yourself, and nothing is left to guesswork.
+Start it, let it run, and read its output.
+
+Input — three things, as arguments or environment variables:
+
+- `--service <url>` (or `VIBECOMICS_IMAGE_SERVICE_URL`): the image
+  service. Each request is POSTed to it as JSON
+  (`{ kind, prompt, referenceImages: [dataUrl], width?, height?,
+transparent?, ... }`); it answers with the image (`image/*` bytes, or
+  JSON `{ "image": "data:..." }`).
+- `--s3 <connection string>` (or `VIBECOMICS_S3`): the S3-compatible
+  bucket that holds the project, `s3://<key>:<secret>@<host>[:<port>]/<bucket>`
+  (`?tls=1`, `?region=…`, `?pathStyle=0` as in section 2). To keep the secret
+  off the command line, leave it out of the string and set
+  `VIBECOMICS_S3_SECRET_ACCESS_KEY`.
+- `--project <name>`: the project's folder name in the bucket.
+- Optional: `--only references,layers,panels` (default: all three),
+  `--dry-run` (count only, generate nothing), `--json` (one JSON event per
+  line instead of text).
+
+```
+node vibecomics-generate.mjs --service http://127.0.0.1:8188/vibecomic/generate \
+  --s3 s3://KEY@192.168.1.10:9000/vibecomics --project "My comic"
+```
+
+It looks for the dirty things itself; do not give it a list. It runs, in
+this order: (1) reference art for characters, props, scenes and their
+variations; (2) every dirty layer and background, panel by panel; (3)
+panel images that are out of date. Every image is saved to the project as
+soon as it is made, so it can be stopped and re-run: the second run does
+only what is left. Failures do not stop the run; a failed item stays
+dirty, and the next run retries it.
+
+Output — on stdout, one line per event, so you can follow a run that takes
+a long time (run it in the background and read its output as it grows):
+
+```
+Will generate 12 images: 3 reference, 8 layer/background, 1 panel.
+Starting reference images: 3 images.
+1 of 12 done (Character "Mira" — Front view)
+4 of 12 done (Panel 2 in Page 1: layer "Hero")
+5 of 12 done (Panel 2 in Page 1: background "Street") — FAILED: <reason>
+Finished: 11 of 12 generated, 1 failed.
+```
+
+Errors go to stderr (`error: Page 1…: <reason>`). Exit code: `0` when
+everything was generated (or nothing was outstanding), `1` when some
+failed or it could not start (storage or project unreachable), `2` for
+a mistake in the arguments. If some failed, read the reasons, fix the cause
+(an unreachable service, a bad prompt), and run it again. Run
+`node vibecomics-generate.mjs --help` for the full text.
+
+If the image service only has instructions (a `prompt`) and no `url`, find
+or ask for the URL the instructions describe and use it with the script;
+generate by hand, as in the rest of this section, only when there is truly
+no URL to call.
 
 **Fetch every prompt from the API. Never write one yourself, and never
 hand-stitch one — even from parts you just read back.** Section 9 names

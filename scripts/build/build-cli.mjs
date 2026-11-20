@@ -14,23 +14,32 @@ import { createRequire } from 'node:module';
 import { googleDefines } from './read-env.mjs';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const OUT = path.join(ROOT, 'public', 'vibecomics.mjs');
 const esbuild = createRequire(path.join(ROOT, 'package.json'))('esbuild');
 
-await esbuild.build({
-  entryPoints: [path.join(ROOT, 'src', 'cli', 'bin.ts')],
-  outfile: OUT,
-  bundle: true,
-  platform: 'node',
-  format: 'esm',
-  target: 'node20',
-  define: googleDefines(),
-  banner: {
-    js: "#!/usr/bin/env node\nimport { createRequire as __vcCreateRequire } from 'node:module';\nconst require = __vcCreateRequire(import.meta.url);",
-  },
-  logLevel: 'warning',
-});
-fs.chmodSync(OUT, 0o755);
-console.log(
-  `build-cli: wrote ${path.relative(ROOT, OUT)} (${Math.round(fs.statSync(OUT).size / 1024)} KB)`
-);
+const BUNDLES = [
+  // The full command line.
+  { entry: 'bin.ts', out: 'vibecomics.mjs' },
+  // The standalone, long-running "generate every dirty image" script (see src/cli/generateMain.ts).
+  { entry: 'generateBin.ts', out: 'vibecomics-generate.mjs' },
+];
+
+for (const { entry, out } of BUNDLES) {
+  const OUT = path.join(ROOT, 'public', out);
+  await esbuild.build({
+    entryPoints: [path.join(ROOT, 'src', 'cli', entry)],
+    outfile: OUT,
+    bundle: true,
+    platform: 'node',
+    format: 'esm',
+    target: 'node20',
+    define: googleDefines(),
+    banner: {
+      js: "#!/usr/bin/env node\nimport { createRequire as __vcCreateRequire } from 'node:module';\nconst require = __vcCreateRequire(import.meta.url);",
+    },
+    logLevel: 'warning',
+  });
+  fs.chmodSync(OUT, 0o755);
+  console.log(
+    `build-cli: wrote ${path.relative(ROOT, OUT)} (${Math.round(fs.statSync(OUT).size / 1024)} KB)`
+  );
+}

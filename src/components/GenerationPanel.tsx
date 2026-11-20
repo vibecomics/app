@@ -177,16 +177,20 @@ export default function GenerationPanel({ onClose, onShow }: Props) {
               }
               onClick={() =>
                 void task.run(async () => {
-                  // Reference art (cast/objects/scenes) first: a layer's or background's own
-                  // generation reads whatever reference images its subject/scene currently has, so
-                  // those should be fresh before any layer that might use them runs. Panel images
-                  // last: a panel image is composited from its own layers, so it should be made
-                  // only once those are fresh too.
-                  if (selectedStoryKinds.length)
-                    await cb().generate.batch('references', { kinds: selectedStoryKinds });
-                  if (selectedLayerKinds.length)
-                    await cb().generate.batch('layers', { kinds: selectedLayerKinds });
-                  if (panelsSelected && pendingPanels.length) await cb().generate.batch('panels');
+                  // One function does it all, in order — reference art first (a layer's own
+                  // generation reads whatever reference images its subject/scene has, so those
+                  // should be fresh first), then layers and backgrounds, then panel images (composited
+                  // from fresh layers) — and reports progress to the status line as it goes. It is
+                  // the same function the standalone vibecomics-generate.mjs script runs.
+                  await cb().generate.batch('all', {
+                    phases: [
+                      ...(selectedStoryKinds.length ? ['references'] : []),
+                      ...(selectedLayerKinds.length ? ['layers'] : []),
+                      ...(panelsSelected ? ['panels'] : []),
+                    ],
+                    referenceKinds: selectedStoryKinds,
+                    layerKinds: selectedLayerKinds,
+                  });
                 })
               }
             >

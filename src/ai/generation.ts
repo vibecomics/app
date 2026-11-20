@@ -48,6 +48,10 @@ import type { GenerationReference, ReferenceKind } from './prompt';
 
 export type { GenerationReference, ReferenceKind };
 
+/** Called after each item of a generateAllDirty* batch finishes (ok or failed), in order. When one is
+ * given, the batch leaves the status line to the caller (see generateAllImages). */
+export type OutcomeListener<T> = (outcome: T) => void | Promise<void>;
+
 export interface GenerationOutcome extends LayerRef {
   ok: boolean;
   error?: string;
@@ -774,7 +778,8 @@ function describeVariation(
 export async function generateAllDirty(
   deps: ComicBuilderDeps,
   commit: CommitLayerImage,
-  kinds?: readonly LayerKind[]
+  kinds?: readonly LayerKind[],
+  onOutcome?: OutcomeListener<GenerationOutcome>
 ): Promise<GenerationOutcome[]> {
   const project = requireProject(deps);
   let refs = dirtyLayerRefs(project);
@@ -810,20 +815,25 @@ export async function generateAllDirty(
 
   const outcomes: GenerationOutcome[] = [];
   for (const { ref, run } of runs) {
-    deps.setStatus(`Generating image ${outcomes.length + 1} of ${refs.length}…`);
+    if (!onOutcome) deps.setStatus(`Generating image ${outcomes.length + 1} of ${refs.length}…`);
+    let outcome: GenerationOutcome;
     try {
       await run;
-      outcomes.push({ ...ref, ok: true });
+      outcome = { ...ref, ok: true };
     } catch (e) {
-      outcomes.push({ ...ref, ok: false, error: errorMessage(e) });
+      outcome = { ...ref, ok: false, error: errorMessage(e) };
     }
+    outcomes.push(outcome);
+    await onOutcome?.(outcome);
   }
-  const failed = outcomes.filter((o) => !o.ok).length;
-  deps.setStatus(
-    failed
-      ? `Generated ${outcomes.length - failed} of ${outcomes.length}; ${failed} failed.`
-      : `Generated ${outcomes.length} image${outcomes.length === 1 ? '' : 's'}.`
-  );
+  if (!onOutcome) {
+    const failed = outcomes.filter((o) => !o.ok).length;
+    deps.setStatus(
+      failed
+        ? `Generated ${outcomes.length - failed} of ${outcomes.length}; ${failed} failed.`
+        : `Generated ${outcomes.length} image${outcomes.length === 1 ? '' : 's'}.`
+    );
+  }
   return outcomes;
 }
 
@@ -851,7 +861,8 @@ function commitPanelImage(deps: ComicBuilderDeps, panelId: string, mediaId: stri
  * image, see pendingPanelImages/isPanelImageDirty, so there's no "first image" ambiguity to resolve).
  */
 export async function generateAllDirtyPanelImages(
-  deps: ComicBuilderDeps
+  deps: ComicBuilderDeps,
+  onOutcome?: OutcomeListener<PanelImageOutcome>
 ): Promise<PanelImageOutcome[]> {
   const pending: PendingPanelImage[] = pendingPanelImages(requireProject(deps));
 
@@ -870,20 +881,26 @@ export async function generateAllDirtyPanelImages(
 
   const outcomes: PanelImageOutcome[] = [];
   for (const { p, run } of runs) {
-    deps.setStatus(`Generating panel image ${outcomes.length + 1} of ${pending.length}…`);
+    if (!onOutcome)
+      deps.setStatus(`Generating panel image ${outcomes.length + 1} of ${pending.length}…`);
+    let outcome: PanelImageOutcome;
     try {
       await run;
-      outcomes.push({ pageId: p.pageId, panelId: p.panelId, ok: true });
+      outcome = { pageId: p.pageId, panelId: p.panelId, ok: true };
     } catch (e) {
-      outcomes.push({ pageId: p.pageId, panelId: p.panelId, ok: false, error: errorMessage(e) });
+      outcome = { pageId: p.pageId, panelId: p.panelId, ok: false, error: errorMessage(e) };
     }
+    outcomes.push(outcome);
+    await onOutcome?.(outcome);
   }
-  const failed = outcomes.filter((o) => !o.ok).length;
-  deps.setStatus(
-    failed
-      ? `Generated ${outcomes.length - failed} of ${outcomes.length}; ${failed} failed.`
-      : `Generated ${outcomes.length} panel image${outcomes.length === 1 ? '' : 's'}.`
-  );
+  if (!onOutcome) {
+    const failed = outcomes.filter((o) => !o.ok).length;
+    deps.setStatus(
+      failed
+        ? `Generated ${outcomes.length - failed} of ${outcomes.length}; ${failed} failed.`
+        : `Generated ${outcomes.length} panel image${outcomes.length === 1 ? '' : 's'}.`
+    );
+  }
   return outcomes;
 }
 
@@ -902,7 +919,8 @@ export interface VariationRefOutcome extends VariationRef {
  */
 export async function generateAllDirtyVariations(
   deps: ComicBuilderDeps,
-  kinds?: readonly StoryKind[]
+  kinds?: readonly StoryKind[],
+  onOutcome?: OutcomeListener<VariationRefOutcome>
 ): Promise<VariationRefOutcome[]> {
   let refs = dirtyVariationRefs(requireProject(deps));
   if (kinds) refs = refs.filter((ref) => kinds.includes(ref.kind));
@@ -935,19 +953,25 @@ export async function generateAllDirtyVariations(
 
   const outcomes: VariationRefOutcome[] = [];
   for (const { ref, run } of runs) {
-    deps.setStatus(`Generating reference image ${outcomes.length + 1} of ${refs.length}…`);
+    if (!onOutcome)
+      deps.setStatus(`Generating reference image ${outcomes.length + 1} of ${refs.length}…`);
+    let outcome: VariationRefOutcome;
     try {
       await run;
-      outcomes.push({ ...ref, ok: true });
+      outcome = { ...ref, ok: true };
     } catch (e) {
-      outcomes.push({ ...ref, ok: false, error: errorMessage(e) });
+      outcome = { ...ref, ok: false, error: errorMessage(e) };
     }
+    outcomes.push(outcome);
+    await onOutcome?.(outcome);
   }
-  const failed = outcomes.filter((o) => !o.ok).length;
-  deps.setStatus(
-    failed
-      ? `Generated ${outcomes.length - failed} of ${outcomes.length}; ${failed} failed.`
-      : `Generated ${outcomes.length} reference image${outcomes.length === 1 ? '' : 's'}.`
-  );
+  if (!onOutcome) {
+    const failed = outcomes.filter((o) => !o.ok).length;
+    deps.setStatus(
+      failed
+        ? `Generated ${outcomes.length - failed} of ${outcomes.length}; ${failed} failed.`
+        : `Generated ${outcomes.length} reference image${outcomes.length === 1 ? '' : 's'}.`
+    );
+  }
   return outcomes;
 }
