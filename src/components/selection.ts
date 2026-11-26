@@ -7,14 +7,13 @@ export interface Selection {
   bubbleId?: string;
 }
 
-/** The panel a stored selection highlights (a page's only panel always is), and the selection narrowed to what it holds. */
+/** The panel a stored selection highlights (the first one, when the selection names none or an unknown one), and the selection narrowed to what it holds. */
 export function resolveSelection(
   page: ComicPage | undefined,
   selection: Selection
 ): { panel?: Panel; current: Selection } {
   const panels = page?.panels ?? [];
-  const panel =
-    panels.find((p) => p.id === selection.panelId) ?? (panels.length === 1 ? panels[0] : undefined);
+  const panel = panels.find((p) => p.id === selection.panelId) ?? panels[0];
   const current: Selection = {
     panelId: panel?.id ?? null,
     layerId: panel?.layers.some((l) => l.id === selection.layerId) ? selection.layerId : undefined,

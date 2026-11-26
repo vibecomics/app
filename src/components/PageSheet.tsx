@@ -5,11 +5,18 @@ import { findDividers, moveEdge, rectOf } from '../state/layout';
 import type { Divider, Rect } from '../state/layout';
 import type { ComicPage, PageSize } from '../types/comic';
 import { usePointerDrag } from '../utils/drag';
-import { pointerPercent } from '../utils/geometry';
+import { clamp, pointerPercent } from '../utils/geometry';
 import type { Point } from '../utils/geometry';
 import { useElementSize } from '../utils/useElementSize';
 import CutHandle from './CutHandle';
-import { FIT_VIEW, PANEL_ZOOM_SCALE, clampView, viewForRect } from './pageView';
+import {
+  FIT_VIEW,
+  MAX_SCALE,
+  MIN_SCALE,
+  PANEL_ZOOM_SCALE,
+  clampView,
+  viewForRect,
+} from './pageView';
 import type { PageView } from './pageView';
 import PanelView from './PanelView';
 import type { Selection } from './selection';
@@ -128,6 +135,73 @@ export default function PageSheet({
   const committed = useMemo(() => page.panels.map(rectOf), [page.panels]);
   const rects = resizePreview ?? committed;
   const dividers = useMemo(() => (editing ? findDividers(rects) : []), [editing, rects]);
+
+  // Latest values for the gesture handlers below, which attach once and must never see a stale
+  // view or selection — re-attaching mid-pinch would drop the fingers the browser is tracking.
+  const latest = useRef({ view, editing, rects, panels: page.panels });
+  latest.current = { view, editing, rects, panels: page.panels };
+
+  // Pinch (touch) or ctrl+wheel (trackpad) zooms toward the selected panel, wherever the fingers
+  // land, instead of the pinch center — so the gesture always zooms into what's highlighted.
+  useEffect(() => {
+    const sheet = sheetRef.current;
+    if (!editing || !sheet) return;
+
+    const zoomTo = (scale: number) => {
+      const current = latest.current;
+      const index = current.panels.findIndex((p) => p.id === current.editing?.selection.panelId);
+      const rect = index >= 0 ? current.rects[index] : undefined;
+      setView(
+        rect
+          ? viewForRect(rect, scale, sheetSize.width, sheetSize.height)
+          : clampView({ ...current.view, scale }, sheetSize.width, sheetSize.height)
+      );
+    };
+
+    const touches = new Map<number, Point>();
+    let startDist = 0;
+    let startScale = 1;
+    const distance = () => {
+      const [a, b] = [...touches.values()];
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    };
+
+    const onPointerDown = (event: globalThis.PointerEvent) => {
+      if (event.pointerType !== 'touch') return;
+      touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (touches.size === 2) {
+        startDist = distance();
+        startScale = latest.current.view.scale;
+      }
+    };
+    const onPointerMove = (event: globalThis.PointerEvent) => {
+      if (!touches.has(event.pointerId)) return;
+      touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (touches.size !== 2 || !startDist) return;
+      event.preventDefault();
+      zoomTo(clamp(startScale * (distance() / startDist), MIN_SCALE, MAX_SCALE));
+    };
+    const onPointerEnd = (event: globalThis.PointerEvent) => touches.delete(event.pointerId);
+    const onWheel = (event: WheelEvent) => {
+      if (!event.ctrlKey) return;
+      event.preventDefault();
+      zoomTo(clamp(latest.current.view.scale - event.deltaY * 0.01, MIN_SCALE, MAX_SCALE));
+    };
+
+    sheet.addEventListener('pointerdown', onPointerDown);
+    sheet.addEventListener('pointermove', onPointerMove, { passive: false });
+    sheet.addEventListener('pointerup', onPointerEnd);
+    sheet.addEventListener('pointercancel', onPointerEnd);
+    sheet.addEventListener('wheel', onWheel, { passive: false });
+    return () => {
+      sheet.removeEventListener('pointerdown', onPointerDown);
+      sheet.removeEventListener('pointermove', onPointerMove);
+      sheet.removeEventListener('pointerup', onPointerEnd);
+      sheet.removeEventListener('pointercancel', onPointerEnd);
+      sheet.removeEventListener('wheel', onWheel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [!!editing, sheetSize.width, sheetSize.height]);
 
   // Double-click a panel to zoom in on it (centered); double-click again to zoom back out.
   const handleDoubleClick = (event: MouseEvent<HTMLDivElement>) => {
