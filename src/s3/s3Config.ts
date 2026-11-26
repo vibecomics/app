@@ -66,22 +66,6 @@ export function parseS3ConnectionString(input: string): {
   };
 }
 
-/** Build a connection string from parts, for the UI form that collects them separately. */
-export function buildS3ConnectionString(
-  config: Omit<S3TargetConfig, 'endpoint'> & { host: string; tls?: boolean },
-  credentials: S3Credentials
-): string {
-  const params = new URLSearchParams();
-  if (config.region && config.region !== 'us-east-1') params.set('region', config.region);
-  if (config.tls) params.set('tls', '1');
-  if (!config.forcePathStyle) params.set('pathStyle', '0');
-  const query = params.toString();
-  const userinfo = credentials.secretAccessKey
-    ? `${encodeURIComponent(credentials.accessKeyId)}:${encodeURIComponent(credentials.secretAccessKey)}`
-    : encodeURIComponent(credentials.accessKeyId);
-  return `s3://${userinfo}@${config.host}/${encodeURIComponent(config.bucket)}${query ? `?${query}` : ''}`;
-}
-
 /** A connection id stable for a given endpoint+bucket, with no secret in it. */
 export const s3ConnectionId = (config: S3TargetConfig): string =>
   `s3:${config.endpoint}/${config.bucket}`;
