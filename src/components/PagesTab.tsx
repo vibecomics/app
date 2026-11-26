@@ -64,16 +64,23 @@ export default function PagesTab({
   const { panel, current } = resolveSelection(page, selection);
 
   // Delete or Backspace removes the selected layer or bubble (unless typing in a field or in a popup).
+  // On desktop, Up/Down arrows move to the previous/next page.
   const panelId = panel?.id;
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Delete' && event.key !== 'Backspace') return;
       if (
         (event.target as HTMLElement).closest(
           'input, textarea, select, [contenteditable], [role="dialog"]'
         )
       )
         return;
+      if (wide && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
+        const target = pageIndex + (event.key === 'ArrowDown' ? 1 : -1);
+        if (target >= 0 && target < pages.length) cb().page.select(target);
+        event.preventDefault();
+        return;
+      }
+      if (event.key !== 'Delete' && event.key !== 'Backspace') return;
       if (!panelId) return;
       if (current.layerId) cb().layers.delete(panelId, current.layerId);
       else if (current.bubbleId) cb().bubbles.delete(panelId, current.bubbleId);
@@ -82,7 +89,7 @@ export default function PagesTab({
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [panelId, current.layerId, current.bubbleId]);
+  }, [panelId, current.layerId, current.bubbleId, wide, pageIndex, pages.length]);
 
   const pageStrip = (
     <div className="d-md-none d-flex align-items-center gap-2 border-top bg-body py-2 px-3">
