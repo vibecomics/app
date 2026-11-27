@@ -58,6 +58,24 @@ export function TrashIcon() {
   );
 }
 
+/** A pencil: edit. */
+export function PencilIcon() {
+  return (
+    <svg {...icon}>
+      <path d="M10.5 2.5 13.5 5.5 5 14H2v-3zM9 4 12 7" />
+    </svg>
+  );
+}
+
+/** An arrow pointing left: go back. */
+export function BackArrowIcon() {
+  return (
+    <svg {...icon}>
+      <path d="M12.5 8h-9M7 3.5 2.5 8 7 12.5" />
+    </svg>
+  );
+}
+
 /** Two halves of a shape either side of a dashed axis: mirrors left to right. */
 export function FlipIcon() {
   return (

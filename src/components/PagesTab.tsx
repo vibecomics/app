@@ -9,7 +9,7 @@ import PageButtons from './PageButtons';
 import PageSheet from './PageSheet';
 import { FIT_VIEW, MAX_SCALE, MIN_SCALE, ZOOM_STEP } from './pageView';
 import type { PageView } from './pageView';
-import { SNAPS } from './sheetSnaps';
+import { SHEET_SNAP_KEY, SNAPS } from './sheetSnaps';
 import type { Snap } from './sheetSnaps';
 import PanelInspector from './PanelInspector';
 import { resolveSelection } from './selection';
@@ -54,7 +54,7 @@ export default function PagesTab({
   onSelect,
 }: Props) {
   const wide = useMediaQuery('(min-width: 768px)');
-  const [snap, setSnap] = usePersistentChoice<Snap>('comic-builder:sheet', SNAPS, 'half');
+  const [snap, setSnap] = usePersistentChoice<Snap>(SHEET_SNAP_KEY, SNAPS, 'half');
   const [view, setView] = useState<PageView>(FIT_VIEW);
   const zoomBy = (delta: number) =>
     setView((v) => ({ ...v, scale: Math.min(MAX_SCALE, Math.max(MIN_SCALE, v.scale + delta)) }));

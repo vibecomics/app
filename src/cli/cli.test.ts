@@ -434,7 +434,7 @@ test('a project persists on an S3 bucket and is picked up by the next command', 
     {
       id: connectionId,
       kind: 's3',
-      label: `${endpoint}/${bucket}`,
+      label: `S3: ${bucket} @ ${host}`,
       connected: true,
     }
   );

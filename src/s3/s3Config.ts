@@ -70,5 +70,8 @@ export function parseS3ConnectionString(input: string): {
 export const s3ConnectionId = (config: S3TargetConfig): string =>
   `s3:${config.endpoint}/${config.bucket}`;
 
-/** A display label with credentials stripped — safe to show in the UI and status messages. */
-export const s3Label = (config: S3TargetConfig): string => `${config.endpoint}/${config.bucket}`;
+/** A display label, safe to show in the UI and status messages: never the credentials (this
+ * config carries none — see S3Credentials, kept separate), and not a bare URL, which reads as an
+ * ordinary web link and doesn't say this is S3. */
+export const s3Label = (config: S3TargetConfig): string =>
+  `S3: ${config.bucket} @ ${config.endpoint.replace(/^https?:\/\//, '')}`;

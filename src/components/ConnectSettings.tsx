@@ -72,34 +72,33 @@ export default function ConnectSettings({ connections, deviceCode, onChange, bar
     }
   }
 
-  const list = (
-    <div className={bare ? 'mb-3' : 'border-bottom pb-3 mb-3'}>
-      {live.length > 0 ? (
-        <ul className="list-group list-group-flush">
-          {live.map((c) => (
-            <li
-              key={c.id}
-              className="list-group-item border-0 d-flex align-items-center justify-content-between px-0"
+  /** The connected storage, as rows with a Disconnect button each. In the card (NUX), a border
+   * separates it from the Add buttons below and an empty list says so; bare (Settings), there's
+   * no such border (the page has its own dividers) and nothing shows for an empty list. */
+  function connectionRows(bordered: boolean) {
+    if (live.length === 0) {
+      return bordered ? <p className="text-muted small mb-3">Nothing connected yet.</p> : null;
+    }
+    return (
+      <div className={bordered ? 'border-bottom pb-3 mb-3' : 'mb-3'}>
+        {live.map((c) => (
+          <div key={c.id} className="settings-row">
+            <span className="text-truncate">{c.label}</span>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-danger px-2 flex-shrink-0"
+              title={`Disconnect ${c.label}`}
+              aria-label={`Disconnect ${c.label}`}
+              disabled={disconnecting.busy}
+              onClick={() => void disconnect(c.id)}
             >
-              <span className="text-truncate">{c.label}</span>
-              <button
-                type="button"
-                className="btn btn-sm btn-outline-danger px-2 flex-shrink-0"
-                title={`Disconnect ${c.label}`}
-                aria-label={`Disconnect ${c.label}`}
-                disabled={disconnecting.busy}
-                onClick={() => void disconnect(c.id)}
-              >
-                {disconnecting.busy && disconnectingId === c.id ? <Spinner /> : <TrashIcon />}
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-muted small mb-0">Nothing connected yet.</p>
-      )}
-    </div>
-  );
+              {disconnecting.busy && disconnectingId === c.id ? <Spinner /> : <TrashIcon />}
+            </button>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   const addButtons = (
     <div className="d-flex gap-2 flex-wrap">
@@ -136,9 +135,9 @@ export default function ConnectSettings({ connections, deviceCode, onChange, bar
   if (bare) {
     return (
       <>
-        {list}
+        {connectionRows(false)}
         {addButtons}
-        {error && <div className="alert alert-danger py-2 small mt-3 mb-0">{error}</div>}
+        {error && <div className="alert alert-danger py-2 small mt-2 mb-0">{error}</div>}
         {modals}
       </>
     );
@@ -149,7 +148,7 @@ export default function ConnectSettings({ connections, deviceCode, onChange, bar
       <div className="card shadow-sm">
         <div className="card-body">
           <h3 className="card-title h5">Storage</h3>
-          {list}
+          {connectionRows(true)}
           {addButtons}
           {error && <div className="alert alert-danger py-2 small mt-3 mb-0">{error}</div>}
         </div>

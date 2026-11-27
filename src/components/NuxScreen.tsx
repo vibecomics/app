@@ -6,6 +6,7 @@ import ConnectSettings from './ConnectSettings';
 import { GearIcon } from './Icons';
 import IconButton from './IconButton';
 import NewProjectModal from './NewProjectModal';
+import { openSettings } from './openSettings';
 import { useStorageConnections } from './useStorageConnections';
 
 const TAGLINE =
@@ -60,11 +61,7 @@ export default function NuxScreen({
         <div className="d-flex align-items-center gap-3 mb-2">
           <img src={`${import.meta.env.BASE_URL}logo.png`} alt="" width={48} height={48} />
           <h1 className="h3 mb-0 flex-grow-1">VibeComics</h1>
-          <IconButton
-            label="Settings"
-            title="Settings"
-            onClick={() => (window.location.hash = '#settings')}
-          >
+          <IconButton label="Settings" title="Settings" onClick={openSettings}>
             <GearIcon />
           </IconButton>
         </div>

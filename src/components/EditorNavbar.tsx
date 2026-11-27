@@ -8,6 +8,7 @@ import DropdownMenu, { DropdownItem } from './DropdownMenu';
 import { EDITOR_TABS } from './editorTabs';
 import type { EditorTab } from './editorTabs';
 import GeneratorButton from './GeneratorButton';
+import { openSettings } from './openSettings';
 import { useBackup } from './useBackup';
 import { useBusy } from './useBusy';
 import RefreshButton from './RefreshButton';
@@ -72,7 +73,7 @@ export default function EditorNavbar({
         <DropdownItem onClick={() => void menuTask.run(() => cb().storage.listProjects(true))}>
           Open project
         </DropdownItem>
-        <DropdownItem onClick={() => (window.location.hash = '#settings')}>Settings</DropdownItem>
+        <DropdownItem onClick={openSettings}>Settings</DropdownItem>
         <DropdownItem onClick={() => cb().page.preview()}>Preview this page</DropdownItem>
         {!wide && (
           <li>

@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import type { ReactNode } from 'react';
+import { useDismissedHelp } from './useDismissedHelp';
 
 interface Props {
   title: string;
@@ -7,9 +7,10 @@ interface Props {
   children: ReactNode;
 }
 
-/** Expandable help, in its own colour and type so it reads as help rather than as the content around it. A cross dismisses it for this view. */
+/** Expandable help, in its own colour and type so it reads as help rather than as the content
+ * around it. A cross dismisses it for good, everywhere it appears (see useDismissedHelp). */
 export default function HelpSection({ title, open, children }: Props) {
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, dismiss] = useDismissedHelp(title);
   if (dismissed) return null;
 
   return (
@@ -24,7 +25,7 @@ export default function HelpSection({ title, open, children }: Props) {
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            setDismissed(true);
+            dismiss();
           }}
         />
       </summary>

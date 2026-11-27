@@ -5,6 +5,7 @@ import type { ProjectFolder } from '../storage/types';
 import { GearIcon } from './Icons';
 import IconButton from './IconButton';
 import NewProjectModal from './NewProjectModal';
+import { openSettings } from './openSettings';
 import Spinner from './Spinner';
 import { useStorageConnections } from './useStorageConnections';
 import { useBusy } from './useBusy';
@@ -36,13 +37,10 @@ export default function ProjectTiles({
   return (
     <div className="min-vh-100 bg-body-tertiary">
       <div className="container py-4">
-        <div className="d-flex align-items-center justify-content-between mb-4">
-          <h1 className="h4 mb-0">Your comics</h1>
-          <IconButton
-            label="Settings"
-            title="Settings"
-            onClick={() => (window.location.hash = '#settings')}
-          >
+        <div className="d-flex align-items-center gap-3 mb-4">
+          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="" width={40} height={40} />
+          <h1 className="h4 mb-0 flex-grow-1">VibeComics</h1>
+          <IconButton label="Settings" title="Settings" onClick={openSettings}>
             <GearIcon />
           </IconButton>
         </div>

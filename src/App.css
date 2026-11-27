@@ -810,6 +810,21 @@ kept the same size regardless of that content so a row of them lines up evenly. 
   --bs-btn-active-border-color: #dee2e6;
 }
 
+/* The Settings page: plain rows (no card), each with breathing room and a hairline divider below
+   it, except the last row of its group. */
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.settings-row:last-child {
+  border-bottom: none;
+}
+
 /* Expandable help: an info-coloured, italic box with a "?" badge, so it is never mistaken for content. */
 .help-section {
   background: var(--bs-info-bg-subtle);

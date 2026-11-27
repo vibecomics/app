@@ -5,7 +5,7 @@ import {
   subscribeGeneratorConfig,
 } from '../generators/browserConfigStore';
 
-/** The image generator config, re-rendering when GeneratorSettings saves a new one. */
+/** The image generator config, re-rendering when the Settings page saves a new one. */
 export function useGeneratorConfig() {
   return useSyncExternalStore(subscribeGeneratorConfig, readGeneratorConfig);
 }
