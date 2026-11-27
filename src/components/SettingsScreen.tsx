@@ -1,9 +1,10 @@
+import { useState } from 'react';
 import type { DeviceCodeInfo } from '../drive/driveClient';
-import type { StorageConnectionInfo } from '../storage/connections';
+import type { ProjectFolder } from '../storage/types';
 import ConnectSettings from './ConnectSettings';
 import GeneratorSettings from './GeneratorSettings';
 import { useGeneratorConfig, useGeneratorConfigProblem } from './useGeneratorConfig';
-import { useState } from 'react';
+import { useStorageConnections } from './useStorageConnections';
 
 /** A one-line summary of the image generator and a button to configure it. */
 function GeneratorSettingsCard() {
@@ -33,25 +34,41 @@ function GeneratorSettingsCard() {
   );
 }
 
-/** Storage and the image generator, folded away: they are rarely changed once a comic exists. */
-export default function SettingsSection({
-  connections,
+/**
+ * The settings page, at #settings: storage and the image generator, rarely changed once a comic
+ * exists. Reached from the NUX and project list pages, and from the editor's hamburger menu.
+ */
+export default function SettingsScreen({
+  projects,
   deviceCode,
-  onChange,
 }: {
-  connections: StorageConnectionInfo[];
+  projects: ProjectFolder[];
   deviceCode: DeviceCodeInfo | null;
-  onChange: () => void;
 }) {
+  const { connections, refreshConnections } = useStorageConnections(projects, deviceCode);
+
   return (
-    <details className="mt-4">
-      <summary className="h6 mb-3" style={{ cursor: 'pointer' }}>
-        Storage &amp; settings
-      </summary>
-      <div className="row g-3">
-        <ConnectSettings connections={connections} deviceCode={deviceCode} onChange={onChange} />
-        <GeneratorSettingsCard />
+    <div className="min-vh-100 bg-body-tertiary">
+      <div className="container py-5" style={{ maxWidth: 720 }}>
+        <div className="d-flex align-items-center gap-3 mb-4">
+          <button
+            type="button"
+            className="btn btn-outline-secondary btn-sm"
+            onClick={() => window.history.back()}
+          >
+            ← Back
+          </button>
+          <h1 className="h4 mb-0">Settings</h1>
+        </div>
+        <div className="row g-3">
+          <ConnectSettings
+            connections={connections}
+            deviceCode={deviceCode}
+            onChange={refreshConnections}
+          />
+          <GeneratorSettingsCard />
+        </div>
       </div>
-    </details>
+    </div>
   );
 }

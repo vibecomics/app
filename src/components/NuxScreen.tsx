@@ -4,7 +4,6 @@ import type { StorageConnectionInfo } from '../storage/connections';
 import type { ProjectFolder } from '../storage/types';
 import ConnectSettings from './ConnectSettings';
 import NewProjectModal from './NewProjectModal';
-import SettingsSection from './SettingsSection';
 import { useStorageConnections } from './useStorageConnections';
 
 const TAGLINE =
@@ -102,18 +101,15 @@ export default function NuxScreen({
               <button className="btn btn-primary" onClick={() => setShowNewModal(true)}>
                 New project
               </button>
-              <hr className="my-4" />
-              <SettingsSection
-                connections={connections}
-                deviceCode={deviceCode}
-                onChange={refreshConnections}
-              />
             </>
           )}
         </section>
 
+        <p className="small mt-4 mb-0">
+          <a href="#settings">Settings</a> — storage and the image generator.
+        </p>
         {projects.length > 0 && (
-          <a className="d-inline-block mt-4 small" href="#welcome">
+          <a className="d-inline-block mt-2 small" href="#welcome">
             Back to your comics
           </a>
         )}

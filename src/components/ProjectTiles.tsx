@@ -3,15 +3,14 @@ import { cb } from '../ai/actions';
 import type { DeviceCodeInfo } from '../drive/driveClient';
 import type { ProjectFolder } from '../storage/types';
 import NewProjectModal from './NewProjectModal';
-import SettingsSection from './SettingsSection';
 import Spinner from './Spinner';
 import { useStorageConnections } from './useStorageConnections';
 import { useBusy } from './useBusy';
 
 /**
  * The app's project list: one card per project across every connected storage location, plus a
- * dashed tile that creates a new one, and the storage and settings folded away below. With no
- * projects the app shows the first-run screen instead (see NuxScreen).
+ * dashed tile that creates a new one, and a link to Settings below. With no projects the app
+ * shows the first-run screen instead (see NuxScreen).
  */
 export default function ProjectTiles({
   projects,
@@ -23,7 +22,7 @@ export default function ProjectTiles({
   const [showNewModal, setShowNewModal] = useState(false);
   const [openingId, setOpeningId] = useState<string | null>(null);
   const opening = useBusy();
-  const { connections, refreshConnections } = useStorageConnections(projects, deviceCode);
+  const { connections } = useStorageConnections(projects, deviceCode);
 
   const liveCount = connections.filter((c) => c.connected).length;
 
@@ -75,11 +74,9 @@ export default function ProjectTiles({
             </button>
           </div>
         </div>
-        <SettingsSection
-          connections={connections}
-          deviceCode={deviceCode}
-          onChange={refreshConnections}
-        />
+        <p className="mt-4 mb-0">
+          <a href="#settings">Settings</a>
+        </p>
       </div>
       {showNewModal && (
         <NewProjectModal connections={connections} onClose={() => setShowNewModal(false)} />

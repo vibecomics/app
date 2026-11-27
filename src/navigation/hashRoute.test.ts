@@ -35,6 +35,11 @@ test('parses the first-run screen', () => {
   assert.equal(formatHash({ screen: 'nux' }), '#nux');
 });
 
+test('parses the settings screen', () => {
+  assert.deepEqual(parseHash('#settings'), { screen: 'settings' });
+  assert.equal(formatHash({ screen: 'settings' }), '#settings');
+});
+
 test('parses comic tabs and pages', () => {
   assert.deepEqual(parseHash('#comic=Ashnix%20tardy&cast'), {
     screen: 'comic',

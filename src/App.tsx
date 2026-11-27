@@ -12,6 +12,7 @@ import type { Selection } from './components/selection';
 import { clearMediaCache } from './components/mediaImages';
 import PreviewScreen from './components/PreviewScreen';
 import ProjectTiles from './components/ProjectTiles';
+import SettingsScreen from './components/SettingsScreen';
 import StatusToast from './components/StatusToast';
 import type { Status } from './components/StatusToast';
 import {
@@ -67,7 +68,7 @@ import type { ComicProject } from './types/comic';
 import { errorMessage } from './utils/errors';
 import { makeThumbnail } from './utils/thumbnail';
 
-type Screen = 'tiles' | 'nux' | 'editor';
+type Screen = 'tiles' | 'nux' | 'settings' | 'editor';
 
 /** The storage calls the ComicBuilder deps make: whichever backend is active. */
 const storage = {
@@ -326,6 +327,10 @@ export default function App() {
       setScreen('nux');
       return;
     }
+    if (target.screen === 'settings') {
+      setScreen('settings');
+      return;
+    }
 
     const open = projectRef.current;
     if (comicRef.current === target.comic && open) {
@@ -393,11 +398,13 @@ export default function App() {
 
   const showNux = screen === 'nux' || (screen === 'tiles' && projects.length === 0);
   const route: Route =
-    screen === 'editor' && project && comic
-      ? { screen: 'comic', ...routeOf(comic, project, { tab, pageIndex, selection }) }
-      : showNux
-        ? { screen: 'nux' }
-        : { screen: 'welcome' };
+    screen === 'settings'
+      ? { screen: 'settings' }
+      : screen === 'editor' && project && comic
+        ? { screen: 'comic', ...routeOf(comic, project, { tab, pageIndex, selection }) }
+        : showNux
+          ? { screen: 'nux' }
+          : { screen: 'welcome' };
   const expectedHash = formatHash(route);
   useEffect(() => {
     if (!ready || loading) return;
@@ -615,7 +622,9 @@ export default function App() {
 
   const currentPage = project?.pages[pageIndex];
   let content = null;
-  if (screen === 'tiles' || screen === 'nux') {
+  if (screen === 'settings') {
+    content = <SettingsScreen projects={projects} deviceCode={deviceCode} />;
+  } else if (screen === 'tiles' || screen === 'nux') {
     content = showNux ? (
       <NuxScreen projects={projects} deviceCode={deviceCode} />
     ) : (

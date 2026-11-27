@@ -16,7 +16,11 @@ export interface ComicRoute {
   layer?: string;
 }
 
-export type Route = { screen: 'welcome' } | { screen: 'nux' } | ({ screen: 'comic' } & ComicRoute);
+export type Route =
+  | { screen: 'welcome' }
+  | { screen: 'nux' }
+  | { screen: 'settings' }
+  | ({ screen: 'comic' } & ComicRoute);
 
 /** What the editor shows: the tab, the page at an index, and the highlighted panel and layer. */
 export interface View {
@@ -28,6 +32,7 @@ export interface View {
 export const WELCOME_HASH = '#welcome';
 const WELCOME: Route = { screen: 'welcome' };
 const NUX: Route = { screen: 'nux' };
+const SETTINGS: Route = { screen: 'settings' };
 const FLAG_TABS: EditorTab[] = ['outline', 'cast', 'scenes', 'media'];
 
 const wholeNumber = (text: string): number | undefined =>
@@ -37,6 +42,7 @@ const wholeNumber = (text: string): number | undefined =>
 export function parseHash(hash: string): Route {
   const params = new URLSearchParams(hash.replace(/^#/, ''));
   if (params.has('nux')) return NUX;
+  if (params.has('settings')) return SETTINGS;
   const comic = params.get('comic');
   const flags = FLAG_TABS.filter((tab) => params.has(tab));
   const hasPages = params.has('page');
@@ -61,6 +67,7 @@ export function parseHash(hash: string): Route {
 export function formatHash(route: Route): string {
   if (route.screen === 'welcome') return WELCOME_HASH;
   if (route.screen === 'nux') return '#nux';
+  if (route.screen === 'settings') return '#settings';
   const parts = [`comic=${encodeURIComponent(route.comic)}`];
   if (route.tab === 'pages') {
     if (route.page !== undefined) parts.push(`page=${route.page}`);
