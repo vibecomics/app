@@ -20,10 +20,12 @@ existing project folder or create a new one. Changes are saved automatically
 every minute (only when something changed), or immediately with the
 floppy-disk button in the navbar.
 
-The app's [privacy policy](public/pages/privacy.html) and
-[terms of service](public/pages/tos.html) are plain, self-contained HTML pages,
-served at `/pages/privacy.html` and `/pages/tos.html`. The logo is
-`public/favicon.svg` (the tab icon) and `public/logo.png` (1024 px).
+This repo is the app itself, deployed as a GitHub Pages project site at
+`vibecomics.github.io/app/`. The marketing landing page, privacy policy,
+terms of service, `llms.txt`, and the logo/favicon live in the separate
+[vibecomics.github.io](https://github.com/vibecomics/vibecomics.github.io)
+repo, served at the site root; the app references the logo and favicon
+there by absolute URL.
 
 ## Google Drive setup
 
@@ -98,8 +100,9 @@ apply that depends on which S3-compatible server you run.
 
 Pushing to `main` runs the `Deploy to GitHub Pages` workflow, which builds
 `dist/` (including the service worker and build metadata) and publishes it.
-The site uses relative URLs, so it works from any path (a project site such as
-`https://<user>.github.io/<repo>/`, a custom domain, or a sub-folder).
+The site uses relative URLs, so it works from any path; this repo is set up
+as a GitHub Pages project site, which GitHub serves at
+`https://vibecomics.github.io/app/`.
 
 One-time setup for a new repository:
 
@@ -109,8 +112,8 @@ One-time setup for a new repository:
 ## For AI agents
 
 Agents use the command line, `vibecomics.mjs`, which is deployed next to the
-site (<https://nparashuram.github.io/vibecomics/vibecomics.mjs>; Node.js 20 or
-newer; nothing to install, no browser needed):
+app (<https://vibecomics.github.io/app/vibecomics.mjs>; Node.js 20 or newer;
+nothing to install, no browser needed):
 
 ```sh
 node vibecomics.mjs help                    # every command
@@ -138,7 +141,9 @@ ComicBuilder.help();
 
 That prints the API reference: every action is documented via JSDoc-derived
 `.toString()` docs on the runtime API. A static copy is generated to
-`public/api.txt` and deployed with the site, next to `public/llms.txt`, the
+`public/api.txt` and deployed with the app at `/app/api.txt`. The
 step-by-step guide an agent follows to build a comic (workflow, visual style,
-image formats, continuity), which is written by hand in `scripts/build/llms-guide.md`. The engineering design — architecture, data model,
-Drive scope, autosave, service worker, build pipeline — is in `spec.md`.
+image formats, continuity) is `llms.txt`, hand-written and served at the site
+root by the [vibecomics.github.io](https://github.com/vibecomics/vibecomics.github.io)
+repo. The engineering design — architecture, data model, Drive scope,
+autosave, service worker, build pipeline — is in `spec.md`.

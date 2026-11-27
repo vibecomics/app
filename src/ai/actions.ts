@@ -6,8 +6,8 @@
  * `ComicBuilder` literal below is the single source of truth for the docs:
  * scripts/build/extract-docs.mjs turns it into src/ai/actions.docs.gen.ts (attached
  * as each node's toString() and rendered by ComicBuilder.help()) and
- * public/api.txt (the static API reference; public/llms.txt is the separate
- * how-to-build-a-comic guide, scripts/build/llms-guide.md).
+ * public/api.txt (the static API reference; the how-to-build-a-comic guide,
+ * llms.txt, is hand-written in the vibecomics.github.io repo).
  */
 
 import type { DeviceCodeInfo } from '../drive/deviceOAuth';

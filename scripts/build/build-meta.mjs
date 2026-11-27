@@ -1,10 +1,8 @@
 /**
- * Post-Vite build step: bundles src/sw.ts into dist/app/sw.js (esbuild, minified
- * IIFE) and writes dist/app/buildinfo.js as `self.BUILD_INFO = { commit, builtAt,
+ * Post-Vite build step: bundles src/sw.ts into dist/sw.js (esbuild, minified
+ * IIFE) and writes dist/buildinfo.js as `self.BUILD_INFO = { commit, builtAt,
  * files }`. The service worker compares `commit` on every navigation to detect
- * a new build. Scoped to dist/app (not the whole of dist) because that's where
- * the app itself lives; the root index.html is a standalone static page with no
- * service worker of its own.
+ * a new build.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -15,7 +13,6 @@ import { createRequire } from 'node:module';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..', '..');
 const DIST = path.join(ROOT, 'dist');
-const APP_DIST = path.join(DIST, 'app');
 const require = createRequire(path.join(ROOT, 'package.json'));
 const esbuild = require('esbuild');
 
@@ -41,8 +38,8 @@ function listFiles(dir, base = '') {
 }
 
 async function main() {
-  if (!fs.existsSync(APP_DIST)) {
-    throw new Error('dist/app/ does not exist — run vite build first.');
+  if (!fs.existsSync(DIST)) {
+    throw new Error('dist/ does not exist — run vite build first.');
   }
 
   await esbuild.build({
@@ -51,32 +48,23 @@ async function main() {
     minify: true,
     format: 'iife',
     target: 'es2020',
-    outfile: path.join(APP_DIST, 'sw.js'),
+    outfile: path.join(DIST, 'sw.js'),
     logLevel: 'warning',
   });
-  console.log('build-meta: bundled src/sw.ts -> dist/app/sw.js');
+  console.log('build-meta: bundled src/sw.ts -> dist/sw.js');
 
   // Listed after bundling so sw.js is included; the worker caches buildinfo.js itself.
-  // Scoped to the app only: the root landing page and the public docs (llms.txt, api.txt,
-  // the CLI, schema/, pages/) sit outside the app's service worker scope on purpose. Vite
-  // puts every entry's JS/CSS chunks in one shared dist/assets/, not under dist/app/, but
-  // names them after their entry point — "app-<hash>" for this one — so they're told apart
-  // from the root landing page's own chunks (if it ever grows any) by that prefix alone.
-  const appAssets = listFiles(path.join(DIST, 'assets'))
-    .filter((f) => f.startsWith('app-'))
-    .map((f) => `../assets/${f}`);
-  const files = [...listFiles(APP_DIST).filter((f) => f !== 'buildinfo.js'), ...appAssets].sort();
+  const files = listFiles(DIST)
+    .filter((f) => f !== 'buildinfo.js')
+    .sort();
   const info = {
     commit: git(['rev-parse', 'HEAD']),
     builtAt: new Date().toISOString(),
     files,
   };
-  fs.writeFileSync(
-    path.join(APP_DIST, 'buildinfo.js'),
-    `self.BUILD_INFO=${JSON.stringify(info)};\n`
-  );
+  fs.writeFileSync(path.join(DIST, 'buildinfo.js'), `self.BUILD_INFO=${JSON.stringify(info)};\n`);
   console.log(
-    `build-meta: wrote dist/app/buildinfo.js (${files.length} files, commit ${info.commit.slice(0, 8)})`
+    `build-meta: wrote dist/buildinfo.js (${files.length} files, commit ${info.commit.slice(0, 8)})`
   );
 }
 

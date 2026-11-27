@@ -2,7 +2,9 @@
 
 This is the full design document. The short user-facing overview lives in
 `README.md`. The agent-facing runtime API reference is `ComicBuilder.help()`
-in the browser console and the static copy in `public/api.txt`, plus the how-to guide `public/llms.txt`.
+in the browser console and the static copy in `public/api.txt` (served at `/app/api.txt`).
+The how-to guide, `llms.txt`, is hand-written and served at the site root by
+the [vibecomics.github.io](https://github.com/vibecomics/vibecomics.github.io) repo.
 
 ## 1. Architecture
 
@@ -361,13 +363,13 @@ that starts with `{ … }` is kept verbatim). It emits four artifacts:
    `HELP_TEXT`, the rendered reference (gitignored; generated before `tsc`).
 2. `public/api.txt` — `HELP_TEXT` (the conventions, then every
    namespace/function with description, parameters and return value) plus the
-   data model: the **API reference**. It is **deployed with the site**, next to
-   `index.html`.
-3. `public/llms.txt` — `scripts/build/llms-guide.md`, printed verbatim: the
-   **how-to-build-a-comic guide**. It deliberately contains no function
-   names, signatures or code; it points to `api.txt` for those (the JSDoc,
-   including its layout examples, is where API usage lives) and tells the
-   agent to drive the app with the CLI (section 13), not a browser.
+   data model: the **API reference**. It is **deployed with the app**, next to
+   `index.html` (so at `/app/api.txt`).
+3. `llms.txt` — hand-written in the vibecomics.github.io repo, served at the
+   site root: the **how-to-build-a-comic guide**. It deliberately contains no
+   function names, signatures or code; it points to `api.txt` for those (the
+   JSDoc, including its layout examples, is where API usage lives) and tells
+   the agent to drive the app with the CLI (section 13), not a browser.
 4. `src/cli/commands.gen.ts` — the CLI's command table (section 13): the same
    JSDoc plus `scripts/build/cli-inputs.mjs`, which says what kind of value each
    parameter is (text, number, choice, JSON, file, or an object given as one
@@ -590,7 +592,7 @@ Pattern: cache-first with commit-based update detection.
 `npm run build`:
 
 ```
-node scripts/build/extract-docs.mjs   # actions.ts -> actions.docs.gen.ts + public/api.txt + src/cli/commands.gen.ts; guide -> public/llms.txt
+node scripts/build/extract-docs.mjs   # actions.ts -> actions.docs.gen.ts + public/api.txt + src/cli/commands.gen.ts
 node scripts/build/build-cli.mjs      # src/cli/bin.ts -> public/vibecomics.mjs (esbuild, Node 20)
 tsc -b                          # TypeScript (project references)
 vite build                      # -> dist/
@@ -608,7 +610,7 @@ plus the CLI end to end against an in-memory fake of Google's OAuth and Drive
 endpoints, `src/cli/testing/fakeGoogle.ts`). Formatting: Prettier config in `.prettierrc.json` (single quotes, semicolons, 2-space,
 100 col, es5 trailing commas); `npm run format` / `npm run format:check`;
 a Husky pre-commit hook runs `lint-staged` on
-`*.{js,ts,json,css,html,md}`. `src/ai/actions.docs.gen.ts`, `src/cli/commands.gen.ts`, `public/llms.txt`, `public/api.txt`, `public/vibecomics.mjs` and `*.tsbuildinfo` are
+`*.{js,ts,json,css,html,md}`. `src/ai/actions.docs.gen.ts`, `src/cli/commands.gen.ts`, `public/api.txt`, `public/vibecomics.mjs` and `*.tsbuildinfo` are
 gitignored (generated).
 
 CI (`.github/workflows/ci.yml`): `npm ci`, `npm run format:check`,
@@ -690,7 +692,7 @@ message, where, fix? }`, errors first; exposed as `project.lint()` and the
 
 Agents that cannot run JavaScript in a page (or should not need a browser at
 all) drive the app with a Node.js 20+ program, bundled by esbuild to
-`public/vibecomics.mjs` and deployed next to `llms.txt`. It calls the same
+`public/vibecomics.mjs` and deployed at `/app/vibecomics.mjs`. It calls the same
 `createComicBuilder(deps)` as the page, with deps built for Node, so a command is
 exactly the API function of the same name:
 `node vibecomics.mjs <namespace> <function> [arguments]` prints the result as JSON

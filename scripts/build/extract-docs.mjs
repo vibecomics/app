@@ -4,8 +4,8 @@
  *   - src/ai/actions.docs.gen.ts: ACTION_DOCS (dotted path -> doc string, used
  *     for per-node toString()) and HELP_TEXT (returned by ComicBuilder.help()).
  *   - public/api.txt: HELP_TEXT plus the data model: the API reference for AI agents.
- *   - public/llms.txt: scripts/build/llms-guide.md, the step-by-step guide to building
- *     a comic (no API details; it points to api.txt and the CLI).
+ *     Served at /app/api.txt; llms.txt (the step-by-step guide, no API details)
+ *     lives in the vibecomics.github.io repo and is served at the site root.
  *   - src/cli/commands.gen.ts: the CLI's command table (docs plus how each
  *     parameter is typed on the command line; see scripts/build/cli-commands.mjs).
  *
@@ -22,7 +22,6 @@ import { buildCommands } from './cli-commands.mjs';
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const ACTIONS_TS = path.join(ROOT, 'src', 'ai', 'actions.ts');
 const GEN_TS = path.join(ROOT, 'src', 'ai', 'actions.docs.gen.ts');
-const LLMS_TXT = path.join(ROOT, 'public', 'llms.txt');
 const API_TXT = path.join(ROOT, 'public', 'api.txt');
 const COMMANDS_TS = path.join(ROOT, 'src', 'cli', 'commands.gen.ts');
 const ROOT_NAME = 'ComicBuilder';
@@ -38,7 +37,8 @@ const CONVENTIONS = [
   '  `vibecomics-generate.mjs` (next to `vibecomics.mjs`; `node vibecomics-generate.mjs --service <url>',
   '  --s3 <connection string> --project <name>`). It finds everything dirty itself and runs',
   '  `generate.batch("all")`: reference art first, then layers and backgrounds panel by panel, then',
-  '  panel images, printing "X of N done (…)" as it goes. See `llms.txt` for its input and output.',
+  '  panel images, printing "X of N done (…)" as it goes. See `llms.txt` (served at the site root)',
+  '  for its input and output.',
   '- Several storage connections can be live at once, in the browser and on the command line alike:',
   '  `ComicBuilder.storage.connect("drive")` adds Google Drive (works from injected scripts, no',
   '  popup or user gesture needed — the same button a human clicks also works for an agent; the',
@@ -109,15 +109,6 @@ const CONVENTIONS = [
   '  `page.preview()` and take a screenshot (the command line has no preview). Never',
   '  invent image URLs.',
 ];
-
-/**
- * How to build a comic (workflow, style, continuity), kept as plain Markdown.
- * It already has its own "Files served next to the app" section, so nothing
- * is appended here before it is written to public/llms.txt.
- */
-const LLMS_GUIDE = fs
-  .readFileSync(path.join(ROOT, 'scripts', 'build', 'llms-guide.md'), 'utf8')
-  .trim();
 
 const PAGE_SIZE_PRESET_LINES = readPageSizePresets();
 
@@ -276,7 +267,8 @@ function renderReference({ docs, functions }) {
     'Every UI control calls the same functions: one code path, no drift.',
     'In the browser console (or via automation), start with `ComicBuilder.help()`.',
     'This is the API reference. How to build a comic (workflow, visual style, image',
-    'formats, continuity) is in `llms.txt`, served next to the app: read it first.',
+    'formats, continuity) is in `llms.txt`, served at the site root (one folder up',
+    'from here): read it first.',
     '',
     '## Conventions — read before acting',
     '',
@@ -337,10 +329,9 @@ function main() {
         2
       )};\n`
   );
-  fs.writeFileSync(LLMS_TXT, `${LLMS_GUIDE}\n`);
   const shown = (file) => path.relative(ROOT, file);
   console.log(
-    `extract-docs: wrote ${collected.docs.size} entries to ${shown(GEN_TS)}, ${shown(API_TXT)}, ${shown(LLMS_TXT)} and ${shown(COMMANDS_TS)}`
+    `extract-docs: wrote ${collected.docs.size} entries to ${shown(GEN_TS)}, ${shown(API_TXT)} and ${shown(COMMANDS_TS)}`
   );
 }
 

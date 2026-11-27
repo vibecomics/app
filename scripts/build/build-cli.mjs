@@ -1,7 +1,7 @@
 /**
  * Bundles the vibecomics command line (src/cli/bin.ts and everything it uses)
- * into one file, public/vibecomics.mjs, which the site serves next to
- * llms.txt: an agent downloads it and runs it with `node vibecomics.mjs`. The
+ * into one file, public/vibecomics.mjs (served at /app/vibecomics.mjs): an
+ * agent downloads it and runs it with `node vibecomics.mjs`. The
  * Google client values are baked in from the dotenv files, like the web build
  * (the device client's secret ships by design; see src/drive/deviceOAuth.ts).
  *

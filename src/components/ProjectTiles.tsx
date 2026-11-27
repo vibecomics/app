@@ -38,7 +38,7 @@ export default function ProjectTiles({
     <div className="min-vh-100 bg-body-tertiary">
       <div className="container py-4">
         <div className="d-flex align-items-center gap-3 mb-4">
-          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="" width={40} height={40} />
+          <img src="//vibecomics.github.io/logo.png" alt="" width={40} height={40} />
           <h1 className="h4 mb-0 flex-grow-1">VibeComics</h1>
           <IconButton label="Settings" title="Settings" onClick={openSettings}>
             <GearIcon />
