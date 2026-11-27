@@ -3,6 +3,8 @@ import type { DeviceCodeInfo } from '../drive/driveClient';
 import type { StorageConnectionInfo } from '../storage/connections';
 import type { ProjectFolder } from '../storage/types';
 import ConnectSettings from './ConnectSettings';
+import { GearIcon } from './Icons';
+import IconButton from './IconButton';
 import NewProjectModal from './NewProjectModal';
 import { useStorageConnections } from './useStorageConnections';
 
@@ -57,7 +59,14 @@ export default function NuxScreen({
       <div className="container py-5" style={{ maxWidth: 720 }}>
         <div className="d-flex align-items-center gap-3 mb-2">
           <img src={`${import.meta.env.BASE_URL}logo.png`} alt="" width={48} height={48} />
-          <h1 className="h3 mb-0">VibeComics</h1>
+          <h1 className="h3 mb-0 flex-grow-1">VibeComics</h1>
+          <IconButton
+            label="Settings"
+            title="Settings"
+            onClick={() => (window.location.hash = '#settings')}
+          >
+            <GearIcon />
+          </IconButton>
         </div>
         <p className="lead mb-5">{TAGLINE}</p>
 
@@ -105,11 +114,8 @@ export default function NuxScreen({
           )}
         </section>
 
-        <p className="small mt-4 mb-0">
-          <a href="#settings">Settings</a> — storage and the image generator.
-        </p>
         {projects.length > 0 && (
-          <a className="d-inline-block mt-2 small" href="#welcome">
+          <a className="d-inline-block mt-4 small" href="#welcome">
             Back to your comics
           </a>
         )}

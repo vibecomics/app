@@ -4,6 +4,7 @@ import type { DeviceCodeInfo } from '../drive/driveClient';
 import type { StorageConnectionInfo } from '../storage/connections';
 import { errorMessage } from '../utils/errors';
 import { ConnectDriveModal, ConnectS3Modal } from './ConnectModals';
+import { TrashIcon } from './Icons';
 import Spinner from './Spinner';
 import { useBusy } from './useBusy';
 
@@ -13,15 +14,17 @@ interface Props {
   /** Called after a connect/disconnect that this card already knows succeeded, for a snappier
    * refresh than waiting on the next `connections` prop update. */
   onChange: () => void;
+  /** Skip the card and heading: the caller already has its own section heading. */
+  bare?: boolean;
 }
 
 /**
- * The Settings "Storage" section: the storage that is connected now, with a Disconnect button for
- * each, and below it the "Add" buttons. Each opens a popup that walks through connecting: Google
- * Drive via the OAuth device-code flow (see drive/driveClient.ts), or an S3-compatible bucket (see
- * s3/) by its endpoint, credentials and bucket. Any number of buckets can be added.
+ * The "Storage" settings: the storage that is connected now, with a Disconnect button for each,
+ * and below it the "Add" buttons. Each opens a popup that walks through connecting: Google Drive
+ * via the OAuth device-code flow (see drive/driveClient.ts), or an S3-compatible bucket (see s3/)
+ * by its endpoint, credentials and bucket. Any number of buckets can be added.
  */
-export default function ConnectSettings({ connections, deviceCode, onChange }: Props) {
+export default function ConnectSettings({ connections, deviceCode, onChange, bare }: Props) {
   const [showDriveModal, setShowDriveModal] = useState(false);
   const [showS3Modal, setShowS3Modal] = useState(false);
   const [error, setError] = useState('');
@@ -69,59 +72,54 @@ export default function ConnectSettings({ connections, deviceCode, onChange }: P
     }
   }
 
-  return (
-    <div className="col-12">
-      <div className="card shadow-sm">
-        <div className="card-body">
-          <h3 className="card-title h5">Storage</h3>
-
-          <div className="border-bottom pb-3 mb-3">
-            {live.length > 0 ? (
-              <ul className="list-group list-group-flush">
-                {live.map((c) => (
-                  <li
-                    key={c.id}
-                    className="list-group-item border-0 d-flex align-items-center justify-content-between px-0"
-                  >
-                    <span className="text-truncate">{c.label}</span>
-                    <span className="d-flex gap-2 flex-shrink-0">
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-danger"
-                        disabled={disconnecting.busy}
-                        onClick={() => void disconnect(c.id)}
-                      >
-                        {disconnecting.busy && disconnectingId === c.id && <Spinner />}
-                        Disconnect
-                      </button>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-muted small mb-0">Nothing connected yet.</p>
-            )}
-          </div>
-
-          <div className="d-flex gap-2 flex-wrap">
-            {!drive && (
-              <button type="button" className="btn btn-outline-primary" onClick={startDrive}>
-                + Add Google Drive
-              </button>
-            )}
-            <button
-              type="button"
-              className="btn btn-outline-primary"
-              onClick={() => setShowS3Modal(true)}
+  const list = (
+    <div className={bare ? 'mb-3' : 'border-bottom pb-3 mb-3'}>
+      {live.length > 0 ? (
+        <ul className="list-group list-group-flush">
+          {live.map((c) => (
+            <li
+              key={c.id}
+              className="list-group-item border-0 d-flex align-items-center justify-content-between px-0"
             >
-              + Add S3 bucket
-            </button>
-          </div>
+              <span className="text-truncate">{c.label}</span>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-danger px-2 flex-shrink-0"
+                title={`Disconnect ${c.label}`}
+                aria-label={`Disconnect ${c.label}`}
+                disabled={disconnecting.busy}
+                onClick={() => void disconnect(c.id)}
+              >
+                {disconnecting.busy && disconnectingId === c.id ? <Spinner /> : <TrashIcon />}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-muted small mb-0">Nothing connected yet.</p>
+      )}
+    </div>
+  );
 
-          {error && <div className="alert alert-danger py-2 small mt-3 mb-0">{error}</div>}
-        </div>
-      </div>
+  const addButtons = (
+    <div className="d-flex gap-2 flex-wrap">
+      {!drive && (
+        <button type="button" className="btn btn-outline-primary" onClick={startDrive}>
+          + Add Google Drive
+        </button>
+      )}
+      <button
+        type="button"
+        className="btn btn-outline-primary"
+        onClick={() => setShowS3Modal(true)}
+      >
+        + Add S3 bucket
+      </button>
+    </div>
+  );
 
+  const modals = (
+    <>
       {showDriveModal && (
         <ConnectDriveModal
           deviceCode={deviceCode}
@@ -132,6 +130,31 @@ export default function ConnectSettings({ connections, deviceCode, onChange }: P
       {showS3Modal && (
         <ConnectS3Modal onConnect={connectS3} onClose={() => setShowS3Modal(false)} />
       )}
+    </>
+  );
+
+  if (bare) {
+    return (
+      <>
+        {list}
+        {addButtons}
+        {error && <div className="alert alert-danger py-2 small mt-3 mb-0">{error}</div>}
+        {modals}
+      </>
+    );
+  }
+
+  return (
+    <div className="col-12">
+      <div className="card shadow-sm">
+        <div className="card-body">
+          <h3 className="card-title h5">Storage</h3>
+          {list}
+          {addButtons}
+          {error && <div className="alert alert-danger py-2 small mt-3 mb-0">{error}</div>}
+        </div>
+      </div>
+      {modals}
     </div>
   );
 }

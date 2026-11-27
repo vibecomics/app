@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { cb } from '../ai/actions';
 import type { DeviceCodeInfo } from '../drive/driveClient';
 import type { ProjectFolder } from '../storage/types';
+import { GearIcon } from './Icons';
+import IconButton from './IconButton';
 import NewProjectModal from './NewProjectModal';
 import Spinner from './Spinner';
 import { useStorageConnections } from './useStorageConnections';
@@ -9,8 +11,8 @@ import { useBusy } from './useBusy';
 
 /**
  * The app's project list: one card per project across every connected storage location, plus a
- * dashed tile that creates a new one, and a link to Settings below. With no projects the app
- * shows the first-run screen instead (see NuxScreen).
+ * dashed tile that creates a new one. With no projects the app shows the first-run screen instead
+ * (see NuxScreen).
  */
 export default function ProjectTiles({
   projects,
@@ -34,7 +36,16 @@ export default function ProjectTiles({
   return (
     <div className="min-vh-100 bg-body-tertiary">
       <div className="container py-4">
-        <h1 className="h4 mb-4">Your comics</h1>
+        <div className="d-flex align-items-center justify-content-between mb-4">
+          <h1 className="h4 mb-0">Your comics</h1>
+          <IconButton
+            label="Settings"
+            title="Settings"
+            onClick={() => (window.location.hash = '#settings')}
+          >
+            <GearIcon />
+          </IconButton>
+        </div>
         <div className="row g-3">
           {projects.map((folder) => (
             <div
@@ -74,9 +85,6 @@ export default function ProjectTiles({
             </button>
           </div>
         </div>
-        <p className="mt-4 mb-0">
-          <a href="#settings">Settings</a>
-        </p>
       </div>
       {showNewModal && (
         <NewProjectModal connections={connections} onClose={() => setShowNewModal(false)} />

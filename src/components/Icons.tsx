@@ -95,6 +95,15 @@ export function ChevronIcon({ open }: { open: boolean }) {
   );
 }
 
+export function GearIcon() {
+  return (
+    <svg {...icon}>
+      <circle cx="8" cy="8" r="2.3" />
+      <path d="M8 2.2v1.6M8 12.2v1.6M13.8 8h-1.6M3.8 8H2.2M12.1 3.9l-1.1 1.1M5 11.1l-1.1 1.1M12.1 12.1l-1.1-1.1M5 4.9 3.9 3.9" />
+    </svg>
+  );
+}
+
 /** Scissors with the blades pointing right; `turn` rotates it in degrees (90 points them down). */
 export function ScissorsIcon({ turn = 0 }: { turn?: number }) {
   return (
