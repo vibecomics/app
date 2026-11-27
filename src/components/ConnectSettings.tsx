@@ -14,17 +14,16 @@ interface Props {
   /** Called after a connect/disconnect that this card already knows succeeded, for a snappier
    * refresh than waiting on the next `connections` prop update. */
   onChange: () => void;
-  /** Skip the card and heading: the caller already has its own section heading. */
-  bare?: boolean;
 }
 
 /**
  * The "Storage" settings: the storage that is connected now, with a Disconnect button for each,
  * and below it the "Add" buttons. Each opens a popup that walks through connecting: Google Drive
  * via the OAuth device-code flow (see drive/driveClient.ts), or an S3-compatible bucket (see s3/)
- * by its endpoint, credentials and bucket. Any number of buckets can be added.
+ * by its endpoint, credentials and bucket. Any number of buckets can be added. Used only from the
+ * Settings page, which supplies its own heading, so this renders no card of its own.
  */
-export default function ConnectSettings({ connections, deviceCode, onChange, bare }: Props) {
+export default function ConnectSettings({ connections, deviceCode, onChange }: Props) {
   const [showDriveModal, setShowDriveModal] = useState(false);
   const [showS3Modal, setShowS3Modal] = useState(false);
   const [error, setError] = useState('');
@@ -72,15 +71,12 @@ export default function ConnectSettings({ connections, deviceCode, onChange, bar
     }
   }
 
-  /** The connected storage, as rows with a Disconnect button each. In the card (NUX), a border
-   * separates it from the Add buttons below and an empty list says so; bare (Settings), there's
-   * no such border (the page has its own dividers) and nothing shows for an empty list. */
-  function connectionRows(bordered: boolean) {
-    if (live.length === 0) {
-      return bordered ? <p className="text-muted small mb-3">Nothing connected yet.</p> : null;
-    }
+  /** The connected storage, as rows with a Disconnect button each. Nothing shows for an empty
+   * list — the page itself has its own dividers, and an empty state needs no extra line here. */
+  function connectionRows() {
+    if (live.length === 0) return null;
     return (
-      <div className={bordered ? 'border-bottom pb-3 mb-3' : 'mb-3'}>
+      <div className="mb-3">
         {live.map((c) => (
           <div key={c.id} className="settings-row">
             <span className="text-truncate">{c.label}</span>
@@ -132,28 +128,12 @@ export default function ConnectSettings({ connections, deviceCode, onChange, bar
     </>
   );
 
-  if (bare) {
-    return (
-      <>
-        {connectionRows(false)}
-        {addButtons}
-        {error && <div className="alert alert-danger py-2 small mt-2 mb-0">{error}</div>}
-        {modals}
-      </>
-    );
-  }
-
   return (
-    <div className="col-12">
-      <div className="card shadow-sm">
-        <div className="card-body">
-          <h3 className="card-title h5">Storage</h3>
-          {connectionRows(true)}
-          {addButtons}
-          {error && <div className="alert alert-danger py-2 small mt-3 mb-0">{error}</div>}
-        </div>
-      </div>
+    <>
+      {connectionRows()}
+      {addButtons}
+      {error && <div className="alert alert-danger py-2 small mt-2 mb-0">{error}</div>}
       {modals}
-    </div>
+    </>
   );
 }

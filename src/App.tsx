@@ -6,7 +6,6 @@ import type { GenerationTarget } from './ai/generation';
 import { createMediaDeps, createOrOpenProject } from './ai/storageDeps';
 import ConflictBar from './components/ConflictBar';
 import EditorScreen from './components/EditorScreen';
-import NuxScreen from './components/NuxScreen';
 import type { EditorTab } from './components/editorTabs';
 import type { Selection } from './components/selection';
 import { clearMediaCache } from './components/mediaImages';
@@ -68,7 +67,7 @@ import type { ComicProject } from './types/comic';
 import { errorMessage } from './utils/errors';
 import { makeThumbnail } from './utils/thumbnail';
 
-type Screen = 'tiles' | 'nux' | 'settings' | 'editor';
+type Screen = 'tiles' | 'settings' | 'editor';
 
 /** The storage calls the ComicBuilder deps make: whichever backend is active. */
 const storage = {
@@ -323,10 +322,6 @@ export default function App() {
       await goWelcome();
       return;
     }
-    if (target.screen === 'nux') {
-      setScreen('nux');
-      return;
-    }
     if (target.screen === 'settings') {
       setScreen('settings');
       return;
@@ -396,15 +391,12 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const showNux = screen === 'nux' || (screen === 'tiles' && projects.length === 0);
   const route: Route =
     screen === 'settings'
       ? { screen: 'settings' }
       : screen === 'editor' && project && comic
         ? { screen: 'comic', ...routeOf(comic, project, { tab, pageIndex, selection }) }
-        : showNux
-          ? { screen: 'nux' }
-          : { screen: 'welcome' };
+        : { screen: 'welcome' };
   const expectedHash = formatHash(route);
   useEffect(() => {
     if (!ready || loading) return;
@@ -624,12 +616,8 @@ export default function App() {
   let content = null;
   if (screen === 'settings') {
     content = <SettingsScreen projects={projects} deviceCode={deviceCode} />;
-  } else if (screen === 'tiles' || screen === 'nux') {
-    content = showNux ? (
-      <NuxScreen projects={projects} deviceCode={deviceCode} />
-    ) : (
-      <ProjectTiles projects={projects} deviceCode={deviceCode} />
-    );
+  } else if (screen === 'tiles') {
+    content = <ProjectTiles projects={projects} deviceCode={deviceCode} />;
   } else if (project && preview && currentPage) {
     content = (
       <PreviewScreen project={project} page={currentPage} pageSize={project.metadata.pageSize} />

@@ -30,11 +30,6 @@ test('welcome and anything unreadable parse to the welcome page', () => {
   }
 });
 
-test('parses the first-run screen', () => {
-  assert.deepEqual(parseHash('#nux'), { screen: 'nux' });
-  assert.equal(formatHash({ screen: 'nux' }), '#nux');
-});
-
 test('parses the settings screen', () => {
   assert.deepEqual(parseHash('#settings'), { screen: 'settings' });
   assert.equal(formatHash({ screen: 'settings' }), '#settings');

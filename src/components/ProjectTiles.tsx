@@ -12,8 +12,8 @@ import { useBusy } from './useBusy';
 
 /**
  * The app's project list: one card per project across every connected storage location, plus a
- * dashed tile that creates a new one. With no projects the app shows the first-run screen instead
- * (see NuxScreen).
+ * dashed tile that creates a new one (disabled, with no storage connected yet — the first-run
+ * pitch and prompt live on the standalone landing page outside the app, not here).
  */
 export default function ProjectTiles({
   projects,

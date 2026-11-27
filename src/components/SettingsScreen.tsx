@@ -249,7 +249,6 @@ export default function SettingsScreen({
             connections={connections}
             deviceCode={deviceCode}
             onChange={refreshConnections}
-            bare
           />
         </section>
 

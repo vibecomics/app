@@ -48,8 +48,10 @@ function fetchBuildInfo(): Promise<BuildInfo | null> {
     .catch(() => null);
 }
 
+/** Most files are relative to the app's own scope; a few (the shared JS/CSS bundle, one
+ * level up in dist/assets/) are already given relative to that, e.g. "../assets/app-x.js". */
 function cacheKey(file: string): string {
-  return file.startsWith('./') ? file : `./${file}`;
+  return file.startsWith('./') || file.startsWith('../') ? file : `./${file}`;
 }
 
 async function precache(info: BuildInfo): Promise<void> {
