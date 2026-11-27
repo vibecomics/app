@@ -2,7 +2,7 @@
  * The image-generator seam: ComicBuilder talks only to this interface, never to a specific
  * backend. The one implementation is a plain HTTP "image service" (./service.ts): POST the
  * generation request as JSON, get an image back. What sits behind the URL (ComfyUI via
- * the ComfyUI-Vibecomic extension, a hosted API, ...) is not this app's concern.
+ * the ComfyUI-Vibecomics extension, a hosted API, ...) is not this app's concern.
  */
 /** What kind of art is being asked for. Lets a service pick a different workflow per case. */
 export type GenerationKind =
@@ -25,7 +25,7 @@ export interface GenerationRequest {
    * may ignore this; the caller falls back to its own background-removal heuristic in that case. */
   transparent?: boolean;
   /** kind: 'panel' only. The background to start from, and its own prompt (style included). A
-   * provider that understands this (ComfyUI-Vibecomic does) masks each of panelLayers to its own
+   * provider that understands this (ComfyUI-Vibecomics does) masks each of panelLayers to its own
    * box instead of relying on placement read out of the plain `prompt`; one that doesn't can
    * ignore both and fall back to `prompt`/`referenceImages`. */
   panelBackground?: { prompt: string; image: string };

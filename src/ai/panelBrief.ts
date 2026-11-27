@@ -474,7 +474,7 @@ export interface PanelGenerationPlan {
  * The panel as a background to start from plus foreground layers to paint into it, each with its
  * own full prompt (style included) and placement box — what a masked-inpaint workflow needs to
  * make placement a hard constraint instead of a line in a stitched text prompt (see
- * ComfyUI-Vibecomic's build_panel_workflow). Mirrors buildPanelImagePromptParts' per-part text,
+ * ComfyUI-Vibecomics's build_panel_workflow). Mirrors buildPanelImagePromptParts' per-part text,
  * just kept apart by element instead of joined into one prompt.
  */
 export function buildPanelGenerationPlan(

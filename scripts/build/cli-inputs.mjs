@@ -454,7 +454,7 @@ export const INPUTS = {
       type: 'json',
       optional: true,
       example: '@image-service.json',
-      help: 'The image service: { "provider": "service", "url": "http://localhost:8188/vibecomic/generate", "prompt": "optional instructions for an agent" } (url, prompt or both). Leave out to read the current one.',
+      help: 'The image service: { "provider": "service", "url": "http://localhost:8188/vibecomics/generate", "prompt": "optional instructions for an agent" } (url, prompt or both). Leave out to read the current one.',
     },
   },
   'generate.test': {},

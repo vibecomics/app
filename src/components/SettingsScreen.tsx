@@ -177,7 +177,7 @@ function ImageServiceSettings() {
       <EditableConfigField
         label="Service URL"
         value={config?.url}
-        placeholder="http://127.0.0.1:8188/vibecomic/generate"
+        placeholder="http://127.0.0.1:8188/vibecomics/generate"
         onSave={(url) => updateConfig({ url })}
         extraActions={
           config?.url && (
@@ -211,7 +211,7 @@ function ImageServiceSettings() {
       <EditableConfigField
         label="Instructions for an AI agent"
         value={config?.prompt}
-        placeholder="e.g. Generate images with the ComfyUI server at http://…:8188/vibecomic/generate."
+        placeholder="e.g. Generate images with the ComfyUI server at http://…:8188/vibecomics/generate."
         multiline
         onSave={(prompt) => updateConfig({ prompt })}
       />
